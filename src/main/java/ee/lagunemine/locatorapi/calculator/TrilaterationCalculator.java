@@ -3,8 +3,6 @@ package ee.lagunemine.locatorapi.calculator;
 import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
 import com.lemmingapex.trilateration.TrilaterationFunction;
 import ee.lagunemine.locatorapi.model.PositionRecord;
-import ee.lagunemine.locatorapi.model.StationBase;
-import ee.lagunemine.locatorapi.model.StationMobile;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.linear.RealMatrix;
