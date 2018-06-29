@@ -26,13 +26,10 @@ public class TrilaterationCalculator implements Calculator {
 
         LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
-        // the answer
+        //answer
         double[] centroid = optimum.getPoint().toArray();
 
-        // error and geometry information; may throw SingularMatrixException depending the threshold argument provided
         RealVector standardDeviation = optimum.getSigma(0);
         RealMatrix covarianceMatrix = optimum.getCovariances(0);
-
-        int lol = 0;
     }
 }

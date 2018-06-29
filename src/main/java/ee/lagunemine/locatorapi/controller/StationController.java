@@ -1,6 +1,5 @@
 package ee.lagunemine.locatorapi.controller;
 
-import ee.lagunemine.locatorapi.dto.DtoStationBaseRequest;
 import ee.lagunemine.locatorapi.dto.DtoStationMobilePosition;
 import ee.lagunemine.locatorapi.service.StationService;
 import org.modelmapper.ModelMapper;
@@ -21,14 +20,18 @@ class StationController {
     }
 
     @GetMapping("/position")
-    public DtoStationMobilePosition getStationMobilePosition() {
-        //this.stationService.getStationMobile();
-
-        return null;
+    public String getStationMobilePosition() {
+        /*DtoStationMobilePosition dto = this.mapper.map(
+                this.stationService.getStationMobile(),
+                DtoStationMobilePosition.class
+        );*/
+        //TODO
+        return "";
     }
 
     @PostMapping("/update")
-    public String updateStationMobilePosition(DtoStationBaseRequest dto) {
+    public String updateStationMobilePosition() {
+        //TODO
         return "";
     }
 }

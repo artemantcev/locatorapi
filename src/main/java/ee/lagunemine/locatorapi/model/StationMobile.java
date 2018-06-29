@@ -12,9 +12,7 @@ public class StationMobile {
     private Integer id;
 
     private double lastPositionX;
-
     private double lastPositionY;
-
     private double lastError;
 
     public Integer getId() {
