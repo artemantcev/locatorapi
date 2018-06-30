@@ -1,12 +1,11 @@
 package ee.lagunemine.locatorapi.controller;
 
-import ee.lagunemine.locatorapi.dto.DtoStationMobilePosition;
+import ee.lagunemine.locatorapi.dto.StationBaseMessageDTO;
 import ee.lagunemine.locatorapi.service.StationService;
 import org.modelmapper.ModelMapper;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/stations")
@@ -19,13 +18,9 @@ class StationController {
         this.mapper = mapper;
     }
 
-    @GetMapping("/position")
-    public String getStationMobilePosition() {
-        /*DtoStationMobilePosition dto = this.mapper.map(
-                this.stationService.getStationMobile(),
-                DtoStationMobilePosition.class
-        );*/
-        //TODO
+    @PostMapping("/position")
+    @ResponseBody
+    public String getStationMobilePosition(@Valid @RequestBody StationBaseMessageDTO message) {
         return "";
     }
 

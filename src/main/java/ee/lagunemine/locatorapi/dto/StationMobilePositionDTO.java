@@ -1,6 +1,6 @@
 package ee.lagunemine.locatorapi.dto;
 
-public class DtoStationMobilePosition {
+public class StationMobilePositionDTO {
     private int mobileStationId;
     private double positionX;
     private double positionY;
