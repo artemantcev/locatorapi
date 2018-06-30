@@ -9,7 +9,7 @@ import java.lang.annotation.*;
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StationBaseConstraint {
-    String message() default "A requested base station does not exist in database!";
+    String message() default "The requested base station does not exist in database!";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

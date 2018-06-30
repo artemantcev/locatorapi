@@ -4,7 +4,6 @@ import ee.lagunemine.locatorapi.dto.StationBaseMessageDTO;
 import ee.lagunemine.locatorapi.service.StationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 
 @RestController
@@ -18,15 +17,19 @@ class StationController {
         this.mapper = mapper;
     }
 
-    @PostMapping("/position")
-    @ResponseBody
-    public String getStationMobilePosition(@Valid @RequestBody StationBaseMessageDTO message) {
-        return "";
+    @PostMapping("/update")
+    public String update() {
+        return "TODO";
     }
 
-    @PostMapping("/update")
-    public String updateStationMobilePosition() {
-        //TODO
-        return "";
+    @PostMapping("/mobile/find")
+    @ResponseBody
+    public String getMobileStationPosition(@Valid @RequestBody StationBaseMessageDTO message) {
+        return "TODO";
+    }
+
+    @PostMapping("/base/new")
+    public String createBaseStation(int id) {
+        return "TODO";
     }
 }
