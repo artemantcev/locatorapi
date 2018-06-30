@@ -1,6 +1,8 @@
 package ee.lagunemine.locatorapi.controller;
 
 import ee.lagunemine.locatorapi.dto.StationBaseMessageDTO;
+import ee.lagunemine.locatorapi.dto.StationMobilePositionDTO;
+import ee.lagunemine.locatorapi.exception.MissingStationMobileException;
 import ee.lagunemine.locatorapi.service.StationService;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +20,26 @@ class StationController {
     }
 
     @PostMapping("/update")
-    public String update() {
+    public String update(@Valid @RequestBody StationBaseMessageDTO message) {
         return "TODO";
     }
 
-    @PostMapping("/mobile/find")
+    @GetMapping("/mobile/find")
     @ResponseBody
-    public String getMobileStationPosition(@Valid @RequestBody StationBaseMessageDTO message) {
-        return "TODO";
+    public StationMobilePositionDTO getMobileStationPosition(int stationId) {
+        StationMobilePositionDTO response = new StationMobilePositionDTO();
+
+        try {
+            mapper.map(stationService.getMobileStation(stationId), response);
+        } catch (MissingStationMobileException e) {
+
+        }
+
+        return response;
     }
 
     @PostMapping("/base/new")
-    public String createBaseStation(int id) {
-        return "TODO";
+    public int createBaseStation() {
+        return stationService.createBaseStation();
     }
 }

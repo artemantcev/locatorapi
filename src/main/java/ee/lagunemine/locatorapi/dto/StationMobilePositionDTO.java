@@ -1,5 +1,11 @@
 package ee.lagunemine.locatorapi.dto;
 
+/**
+ * Data transfer object for mobile station position response.
+ * One may think that it's redundant, but we have to keep the response format away from model.
+ *
+ * @author Artemy Antcev
+ */
 public class StationMobilePositionDTO {
     private int mobileStationId;
     private double positionX;

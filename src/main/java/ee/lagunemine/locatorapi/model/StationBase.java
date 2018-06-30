@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class StationBase {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
 
     public Integer getId() {

@@ -11,13 +11,18 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * This calculator is implemented through existing non-linear least squares trilateration library.
+ *
+ * @author Artemy Antcev
+ */
 @Component("trilaterationCalculator")
 @Primary
 public class TrilaterationCalculator implements Calculator {
     @Override
     public void calculate(List<PositionRecord> recordList) {
-        double[][] positions = new double[][] {{5.0, -6.0}, {13.0, -15.0}, {21.0, -3.0}, {12.4, -21.2}};
-        double[] distances = new double[] {8.06, 13.97, 23.32, 15.31};
+        double[][] positions = new double[][] {};
+        double[] distances = new double[] {};
 
         NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(
                 new TrilaterationFunction(positions, distances),
@@ -26,7 +31,7 @@ public class TrilaterationCalculator implements Calculator {
 
         LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
-        //answer
+        // answer
         double[] centroid = optimum.getPoint().toArray();
 
         RealVector standardDeviation = optimum.getSigma(0);

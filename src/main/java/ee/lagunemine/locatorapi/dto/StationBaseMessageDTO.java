@@ -6,6 +6,11 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
+/**
+ * Data transfer object for incoming API messages received from the base stations.
+ *
+ * @author Artemy Antcev
+ */
 public class StationBaseMessageDTO {
     @Positive
     @StationBaseConstraint
