@@ -2,6 +2,7 @@ package ee.lagunemine.locatorapi.calculator;
 
 import com.lemmingapex.trilateration.NonLinearLeastSquaresSolver;
 import com.lemmingapex.trilateration.TrilaterationFunction;
+import ee.lagunemine.locatorapi.exception.CalculationException;
 import ee.lagunemine.locatorapi.model.PositionRecord;
 import ee.lagunemine.locatorapi.model.StationBase;
 import ee.lagunemine.locatorapi.model.StationMobile;
@@ -27,7 +28,7 @@ public class TrilaterationCalculator implements Calculator {
     private final static int Y_COORDINATE_INDEX = 1;
 
     @Override
-    public void calculate(List<PositionRecord> recordList, StationMobile mobileStation) {
+    public void calculate(List<PositionRecord> recordList, StationMobile mobileStation) throws CalculationException {
         int numberOfBaseStations = recordList.size();
 
         if (numberOfBaseStations == SPECIAL_DISTANCES_NUMBER) {
@@ -47,25 +48,29 @@ public class TrilaterationCalculator implements Calculator {
             positions[i][Y_COORDINATE_INDEX] = baseStation.getPositionY();
             distances[i] = record.getDistance();
 
-            ++i;
+            i++;
         }
 
-        NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(
-                new TrilaterationFunction(positions, distances),
-                new LevenbergMarquardtOptimizer()
-        );
+        try {
+            NonLinearLeastSquaresSolver solver = new NonLinearLeastSquaresSolver(
+                    new TrilaterationFunction(positions, distances),
+                    new LevenbergMarquardtOptimizer()
+            );
 
-        LeastSquaresOptimizer.Optimum optimum = solver.solve();
+            LeastSquaresOptimizer.Optimum optimum = solver.solve();
 
-        // the center point is an "answer"
-        double[] centroid = optimum.getPoint().toArray();
+            // the center point is an "answer"
+            double[] centroid = optimum.getPoint().toArray();
 
-        // and here we have a radius of possible values which L2 norm is considered to be an error value
-        RealVector deviationVector = optimum.getSigma(0);
+            // and here we have a radius of possible values which L2 norm is considered to be an error value
+            RealVector deviationVector = optimum.getSigma(0);
 
-        mobileStation.setLastPositionX(centroid[X_COORDINATE_INDEX]);
-        mobileStation.setLastPositionY(centroid[Y_COORDINATE_INDEX]);
-        mobileStation.setLastError(deviationVector.getNorm());
+            mobileStation.setLastPositionX(centroid[X_COORDINATE_INDEX]);
+            mobileStation.setLastPositionY(centroid[Y_COORDINATE_INDEX]);
+            mobileStation.setLastError(deviationVector.getNorm());
+        } catch (Exception e) {
+            throw new CalculationException(e.getMessage());
+        }
     }
 
     /**

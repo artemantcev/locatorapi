@@ -1,6 +1,7 @@
 package ee.lagunemine.locatorapi.controller;
 
 import ee.lagunemine.locatorapi.dto.*;
+import ee.lagunemine.locatorapi.exception.CalculationException;
 import ee.lagunemine.locatorapi.service.StationService;
 import ee.lagunemine.locatorapi.validator.StationMobileExists;
 import org.modelmapper.ModelMapper;
@@ -26,10 +27,13 @@ class StationController {
     private ModelMapper mapper;
     private Logger logger;
 
+    private final static String ERROR_CALCULATION = "Calculation error has occurred with one of your data entries: %s";
     private final static String ERROR_INTERNAL = "An internal error has occurred";
     private final static String ERROR_BAD_REQUEST = "Some of your data seems to be missing or having incorrect format";
     private final static String ERROR_VALIDATION = "Some of your input data has incorrect value(s)";
     private final static String ERROR_LOG_PREFIX = "An exception in controller has been occurred";
+
+    private final static String MESSAGE_OK = "The data has been updated successfully";
 
     public StationController(StationService stationService, ModelMapper mapper, Logger logger) {
         this.stationService = stationService;
@@ -42,15 +46,17 @@ class StationController {
      * If the mobile station cannot be found, it will be created in the system's data store automatically.
      *
      * @param requestDto DTO with a complex request mapped to it ({baseStationId, mobileStations:{...}})
-     * @return status of the operation
+     * @return single-pair map with success message.
      */
     @PostMapping("/update")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public String update(@Valid @RequestBody StationBaseRequestDTO requestDto) {
+    public Map<String, String> update(@Valid @RequestBody StationBaseRequestDTO requestDto) throws CalculationException {
         stationService.updateMobileStations(requestDto);
 
-        return "TODO";
+        return new HashMap<String, String>() {{
+            put("message", MESSAGE_OK);
+        }};
     }
 
     /**
@@ -103,27 +109,34 @@ class StationController {
     /**
      * Handle validation exceptions and return 400 HTTP code.
      *
-     * @param request request causing a problem.
-     * @param e caught exception.
      * @return map with error data
      */
     @ExceptionHandler(value = {ConstraintViolationException.class, MethodArgumentNotValidException.class})
     @ResponseBody
-    public Map<String, String> handleValidationErrors(HttpServletRequest request, Exception e) {
+    public Map<String, String> handleValidationErrors() {
         return getWrappedError(ERROR_VALIDATION, HttpStatus.BAD_REQUEST);
     }
 
     /**
      * Handle bad request (e.g. malformed request, missing parameter) exceptions and return 400 HTTP code.
      *
-     * @param request request causing a problem.
-     * @param e caught exception.
      * @return map with error data
      */
     @ExceptionHandler(value = {MissingServletRequestParameterException.class, HttpMessageNotReadableException.class})
     @ResponseBody
-    public Map<String, String> handleBadRequestErrors(HttpServletRequest request, Exception e) {
+    public Map<String, String> handleBadRequestErrors() {
         return getWrappedError(ERROR_BAD_REQUEST, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * A simple calculation error handler.
+     *
+     * @param e caught exception.
+     * @return map with error data
+     */
+    @ExceptionHandler(value = {CalculationException.class})
+    public Map<String, String> handleCalculationError(CalculationException e) {
+        return getWrappedError(String.format(ERROR_CALCULATION, e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     /**

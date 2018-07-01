@@ -1,6 +1,7 @@
 package ee.lagunemine.locatorapi.service;
 
 import ee.lagunemine.locatorapi.dto.StationBaseRequestDTO;
+import ee.lagunemine.locatorapi.exception.CalculationException;
 import ee.lagunemine.locatorapi.model.StationMobile;
 
 /**
@@ -16,6 +17,7 @@ public interface StationService {
     StationMobile getMobileStation(int stationId);
 
     /**
+     * Update the mobile stations information.
      *
      * @param xCoord X coordinate of the base station
      * @param yCoord Y coordinate of the base station
@@ -23,5 +25,5 @@ public interface StationService {
      */
     int createBaseStationAndGetId(double xCoord, double yCoord);
 
-    void updateMobileStations(StationBaseRequestDTO requestDTO);
+    void updateMobileStations(StationBaseRequestDTO requestDTO) throws CalculationException;
 }

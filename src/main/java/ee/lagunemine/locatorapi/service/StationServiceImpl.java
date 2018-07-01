@@ -2,6 +2,7 @@ package ee.lagunemine.locatorapi.service;
 
 import ee.lagunemine.locatorapi.calculator.Calculator;
 import ee.lagunemine.locatorapi.dto.StationBaseRequestDTO;
+import ee.lagunemine.locatorapi.exception.CalculationException;
 import ee.lagunemine.locatorapi.model.PositionRecord;
 import ee.lagunemine.locatorapi.model.StationBase;
 import ee.lagunemine.locatorapi.model.StationMobile;
@@ -11,6 +12,7 @@ import ee.lagunemine.locatorapi.repository.StationMobileRepository;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManagerFactory;
@@ -19,20 +21,25 @@ import java.util.Optional;
 
 @Service
 public class StationServiceImpl implements StationService {
+    private static final String ERROR_LOG_PREFIX_TRANSACTION = "Something went wrong with execution of transaction";
+
     private Calculator calculator;
 
+    private Logger logger;
     private SessionFactory sessionFactory;
     private StationBaseRepository baseRepository;
     private StationMobileRepository mobileRepository;
     private PositionRecordRepository recordRepository;
 
     public StationServiceImpl(
+            Logger logger,
             Calculator calculator,
             EntityManagerFactory entityManagerFactory,
             StationBaseRepository baseRepository,
             StationMobileRepository mobileRepository,
             PositionRecordRepository recordRepository
     ) {
+        this.logger = logger;
         this.calculator = calculator;
         this.baseRepository = baseRepository;
         this.mobileRepository = mobileRepository;
@@ -57,7 +64,7 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
-    public void updateMobileStations(StationBaseRequestDTO requestDTO) {
+    public void updateMobileStations(StationBaseRequestDTO requestDTO) throws CalculationException {
         Session session = sessionFactory.openSession();
         StationBase baseStation = this.baseRepository.findById(requestDTO.getStationId()).orElse(null);
 
@@ -66,8 +73,15 @@ public class StationServiceImpl implements StationService {
 
             try {
                 updateMobileStation(mobileStationData, session, baseStation);
+            } catch (CalculationException e) {
+                tx.rollback();
+                session.close();
+                throw e;
             } catch (Exception e) {
                 tx.rollback();
+                logger.error(ERROR_LOG_PREFIX_TRANSACTION, e);
+
+                continue;
             }
 
             tx.commit();
@@ -87,7 +101,7 @@ public class StationServiceImpl implements StationService {
             StationBaseRequestDTO.DistanceRecordDTO mobileStationData,
             Session session,
             StationBase baseStation
-    ) {
+    ) throws CalculationException {
         StationMobile mobileStation = this.mobileRepository
                 .findById(mobileStationData.getStationId()).orElse(null);
 
@@ -108,16 +122,23 @@ public class StationServiceImpl implements StationService {
         if (newRecord == null) {
             newRecord = new PositionRecord();
             newRecord.setStationBase(baseStation)
-                    .setStationMobile(mobileStation)
-                    .setDistance(mobileStationData.getDistance());
+                    .setStationMobile(mobileStation);
 
             positionRecords.add(newRecord);
         }
 
+        newRecord.setDistance(mobileStationData.getDistance());
+
         calculator.calculate(positionRecords, mobileStation);
 
         session.saveOrUpdate(mobileStation);
-        session.save(newRecord);
+
+        // update the record if it existed in the past, do not create a duplicate
+        if (newRecord.getId() != null) {
+            session.update(newRecord);
+        } else {
+            session.save(newRecord);
+        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ee.lagunemine.locatorapi.calculator;
 
+import ee.lagunemine.locatorapi.exception.CalculationException;
 import ee.lagunemine.locatorapi.model.PositionRecord;
 import ee.lagunemine.locatorapi.model.StationMobile;
 
@@ -17,5 +18,5 @@ public interface Calculator {
      * @param recordList map of PositionRecord entities
      * @param mobileStation mobile station entity which should be updated
      */
-    void calculate(List<PositionRecord> recordList, StationMobile mobileStation);
+    void calculate(List<PositionRecord> recordList, StationMobile mobileStation) throws CalculationException;
 }
