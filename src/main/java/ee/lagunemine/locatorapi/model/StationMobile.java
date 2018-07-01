@@ -1,14 +1,11 @@
 package ee.lagunemine.locatorapi.model;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class StationMobile {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
     private double lastPositionX;
@@ -17,6 +14,16 @@ public class StationMobile {
 
     public Integer getId() {
         return id;
+    }
+
+    /**
+     * We're getting the mobile station identifiers from outside,
+     * so we don't need an automatic generation and have to set id manually.
+     *
+     * @param id manually selected identifier for a new entity
+     */
+    public void setId(int id) {
+        this.id = id;
     }
 
     public double getLastPositionX() {

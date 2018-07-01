@@ -19,7 +19,7 @@ public class StationBaseRequestDTO {
     @Valid
     private List<DistanceRecordDTO> mobileStations;
 
-    private static class DistanceRecordDTO {
+    public static class DistanceRecordDTO {
         @Positive
         private int stationId;
 

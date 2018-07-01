@@ -6,14 +6,16 @@ import ee.lagunemine.locatorapi.validator.StationMobileExists;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @RestController
@@ -25,6 +27,8 @@ class StationController {
     private Logger logger;
 
     private final static String ERROR_INTERNAL = "An internal error has occurred";
+    private final static String ERROR_BAD_REQUEST = "Some of your data seems to be missing or having incorrect format";
+    private final static String ERROR_VALIDATION = "Some of your input data has incorrect value(s)";
     private final static String ERROR_LOG_PREFIX = "An exception in controller has been occurred";
 
     public StationController(StationService stationService, ModelMapper mapper, Logger logger) {
@@ -44,7 +48,7 @@ class StationController {
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
     public String update(@Valid @RequestBody StationBaseRequestDTO requestDto) {
-        
+        stationService.updateMobileStations(requestDto);
 
         return "TODO";
     }
@@ -68,14 +72,16 @@ class StationController {
     /**
      * This route creates a new StationBase entity and returns JSON with its id to a user.
      *
+     * @param xCoord X coordinate of the base station
+     * @param yCoord Y coordinate of the base station
      * @return single-pair map with id.
      */
     @PostMapping("/base/new")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public HashMap<String, Integer> createBaseStation() {
+    public HashMap<String, Integer> createBaseStation(@NotNull Double xCoord, @NotNull Double yCoord) {
         return new HashMap<String, Integer>() {{
-            put("newBaseStationId", stationService.createBaseStation());
+            put("newBaseStationId", stationService.createBaseStationAndGetId(xCoord, yCoord));
         }};
     }
 
@@ -85,30 +91,54 @@ class StationController {
      *
      * @param request request causing a problem.
      * @param e caught exception.
-     * @return map with error data (code, error, path, time) which needs to be turned into JSON response.
+     * @return map with error data
      */
     @ExceptionHandler(value = {Exception.class, RuntimeException.class})
-    public Map<String, String> handleDefaultErrors(HttpServletRequest request, Exception e) {
-        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-        ResponseStatus annotation = AnnotatedElementUtils.findMergedAnnotation(e.getClass(), ResponseStatus.class);
+    @ResponseBody
+    public Map<String, String> handleInternalErrors(HttpServletRequest request, Exception e) {
+        logger.error(ERROR_LOG_PREFIX, e);
+        return getWrappedError(ERROR_INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-        // override HTTP status codes for some of built-in exceptions
-        if (e.getClass().equals(MissingServletRequestParameterException.class)) {
-            httpStatus = HttpStatus.BAD_REQUEST;
-        } else if (e.getClass().equals(ConstraintViolationException.class)) {
-            httpStatus = HttpStatus.NOT_FOUND;
-        } else if (annotation != null) {
-            httpStatus = annotation.value();
-        }
+    /**
+     * Handle validation exceptions and return 400 HTTP code.
+     *
+     * @param request request causing a problem.
+     * @param e caught exception.
+     * @return map with error data
+     */
+    @ExceptionHandler(value = {ConstraintViolationException.class, MethodArgumentNotValidException.class})
+    @ResponseBody
+    public Map<String, String> handleValidationErrors(HttpServletRequest request, Exception e) {
+        return getWrappedError(ERROR_VALIDATION, HttpStatus.BAD_REQUEST);
+    }
 
+    /**
+     * Handle bad request (e.g. malformed request, missing parameter) exceptions and return 400 HTTP code.
+     *
+     * @param request request causing a problem.
+     * @param e caught exception.
+     * @return map with error data
+     */
+    @ExceptionHandler(value = {MissingServletRequestParameterException.class, HttpMessageNotReadableException.class})
+    @ResponseBody
+    public Map<String, String> handleBadRequestErrors(HttpServletRequest request, Exception e) {
+        return getWrappedError(ERROR_BAD_REQUEST, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Wrap error data into the map.
+     *
+     * @param errorMessage exception message
+     * @param errorCode HTTP status object
+     * @return map with error data (code, error, path, time) which needs to be turned into JSON response.
+     */
+    private Map<String, String> getWrappedError(String errorMessage, HttpStatus errorCode) {
         Map<String, String> error = new HashMap<>();
 
-        error.put("code", httpStatus.toString());
-        error.put("error", httpStatus != HttpStatus.INTERNAL_SERVER_ERROR ? e.getMessage() : ERROR_INTERNAL);
-        error.put("path", request.getRequestURL().toString());
+        error.put("code", errorCode.toString());
+        error.put("error", errorMessage);
         error.put("time", new Date().toString());
-
-        logger.error(ERROR_LOG_PREFIX, e);
 
         return error;
     }
