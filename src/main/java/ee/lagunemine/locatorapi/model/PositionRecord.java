@@ -6,7 +6,7 @@ import javax.validation.constraints.NotBlank;
 @Entity
 public class PositionRecord {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
 
     @NotBlank(message = "Base station is required to write a record")

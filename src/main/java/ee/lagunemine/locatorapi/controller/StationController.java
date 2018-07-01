@@ -1,22 +1,25 @@
 package ee.lagunemine.locatorapi.controller;
 
-import ee.lagunemine.locatorapi.dto.StationBaseMessageDTO;
+import ee.lagunemine.locatorapi.dto.StationBaseRequestDTO;
 import ee.lagunemine.locatorapi.dto.StationMobilePositionDTO;
-import ee.lagunemine.locatorapi.exception.MissingStationMobileException;
-import ee.lagunemine.locatorapi.model.StationMobile;
 import ee.lagunemine.locatorapi.service.StationService;
+import ee.lagunemine.locatorapi.validator.StationMobileExists;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @RestController
+@Validated
 @RequestMapping("/stations")
 class StationController {
     private StationService stationService;
@@ -37,7 +40,12 @@ class StationController {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         ResponseStatus annotation = AnnotatedElementUtils.findMergedAnnotation(e.getClass(), ResponseStatus.class);
 
-        if (annotation != null) {
+        // override HTTP status codes for some of built-in exceptions
+        if (e.getClass().equals(MissingServletRequestParameterException.class)) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+        } else if (e.getClass().equals(ConstraintViolationException.class)) {
+            httpStatus = HttpStatus.NOT_FOUND;
+        } else if (annotation != null) {
             httpStatus = annotation.value();
         }
 
@@ -54,25 +62,28 @@ class StationController {
     }
 
     @PostMapping("/update")
-    public String update(@Valid @RequestBody StationBaseMessageDTO message) {
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public String update(@Valid @RequestBody StationBaseRequestDTO requestDto) {
         return "TODO";
     }
 
     @GetMapping("/mobile/find")
+    @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public StationMobilePositionDTO getMobileStationPosition(
-            @RequestParam(value = "stationId") @NotNull Integer id) throws MissingStationMobileException {
-        StationMobilePositionDTO response = new StationMobilePositionDTO();
+    public StationMobilePositionDTO getMobileStationPosition(@StationMobileExists Integer stationId) {
+        StationMobilePositionDTO responseDto = new StationMobilePositionDTO();
+        mapper.map(stationService.getMobileStation(stationId), responseDto);
 
-        StationMobile lol = stationService.getMobileStation(id);
-
-        mapper.map(stationService.getMobileStation(id), response);
-
-        return response;
+        return responseDto;
     }
 
     @PostMapping("/base/new")
-    public int createBaseStation() {
-        return stationService.createBaseStation();
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public HashMap<String, Integer> createBaseStation() {
+        return new HashMap<String, Integer>() {{
+            put("newBaseStationId", stationService.createBaseStation());
+        }};
     }
 }

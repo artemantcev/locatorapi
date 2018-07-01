@@ -10,19 +10,23 @@ import javax.validation.ConstraintValidatorContext;
 import java.util.Optional;
 
 @Component
-public class StationBaseConstraintValidator implements ConstraintValidator<StationBaseConstraint, Integer> {
+public class StationBaseExistsValidator implements ConstraintValidator<StationBaseExists, Integer> {
     private StationBaseRepository repository;
 
     @Autowired
-    public StationBaseConstraintValidator(StationBaseRepository repository) {
+    public StationBaseExistsValidator(StationBaseRepository repository) {
         this.repository = repository;
     }
 
     @Override
-    public void initialize(StationBaseConstraint constraintAnnotation) { }
+    public void initialize(StationBaseExists constraintAnnotation) { }
 
     @Override
     public boolean isValid(Integer id, ConstraintValidatorContext context) {
+        if (id == null) {
+            return false;
+        }
+
         Optional<StationBase> result = repository.findById(id);
 
         return result.isPresent();

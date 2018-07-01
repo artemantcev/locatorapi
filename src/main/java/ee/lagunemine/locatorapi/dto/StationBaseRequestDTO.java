@@ -1,6 +1,6 @@
 package ee.lagunemine.locatorapi.dto;
 
-import ee.lagunemine.locatorapi.validator.StationBaseConstraint;
+import ee.lagunemine.locatorapi.validator.StationBaseExists;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Positive;
@@ -11,9 +11,8 @@ import java.util.List;
  *
  * @author Artemy Antcev
  */
-public class StationBaseMessageDTO {
-    @Positive
-    @StationBaseConstraint
+public class StationBaseRequestDTO {
+    @StationBaseExists
     private int stationId;
 
     @NotEmpty

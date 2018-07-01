@@ -1,5 +1,7 @@
 package ee.lagunemine.locatorapi.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Data transfer object for mobile station position response.
  * One may think that it's redundant, but we have to keep the response format away from model.
@@ -7,9 +9,16 @@ package ee.lagunemine.locatorapi.dto;
  * @author Artemy Antcev
  */
 public class StationMobilePositionDTO {
+    @JsonProperty("stationId")
     private int mobileStationId;
+
+    @JsonProperty("xCoord")
     private double positionX;
+
+    @JsonProperty("yCoord")
     private double positionY;
+
+    @JsonProperty("error")
     private double error;
 
     public int getMobileStationId() {

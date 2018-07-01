@@ -1,7 +1,6 @@
 package ee.lagunemine.locatorapi.service;
 
 import ee.lagunemine.locatorapi.calculator.Calculator;
-import ee.lagunemine.locatorapi.exception.MissingStationMobileException;
 import ee.lagunemine.locatorapi.model.StationBase;
 import ee.lagunemine.locatorapi.model.StationMobile;
 import ee.lagunemine.locatorapi.repository.PositionRecordRepository;
@@ -46,13 +45,9 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
-    public StationMobile getMobileStation(int stationId) throws MissingStationMobileException {
+    public StationMobile getMobileStation(int stationId) {
         Optional<StationMobile> result = mobileRepository.findById(stationId);
 
-        if (!result.isPresent()) {
-            throw new MissingStationMobileException();
-        }
-
-        return result.get();
+        return result.orElse(null);
     }
 }
