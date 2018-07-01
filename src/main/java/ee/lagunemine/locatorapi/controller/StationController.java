@@ -1,7 +1,6 @@
 package ee.lagunemine.locatorapi.controller;
 
-import ee.lagunemine.locatorapi.dto.StationBaseRequestDTO;
-import ee.lagunemine.locatorapi.dto.StationMobilePositionDTO;
+import ee.lagunemine.locatorapi.dto.*;
 import ee.lagunemine.locatorapi.service.StationService;
 import ee.lagunemine.locatorapi.validator.StationMobileExists;
 import org.modelmapper.ModelMapper;
@@ -15,7 +14,6 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @RestController
@@ -35,6 +33,60 @@ class StationController {
         this.logger = logger;
     }
 
+    /**
+     * This route allows base stations to update the positions of mobile stations which are known to them.
+     * If the mobile station cannot be found, it will be created in the system's data store automatically.
+     *
+     * @param requestDto DTO with a complex request mapped to it ({baseStationId, mobileStations:{...}})
+     * @return status of the operation
+     */
+    @PostMapping("/update")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public String update(@Valid @RequestBody StationBaseRequestDTO requestDto) {
+        
+
+        return "TODO";
+    }
+
+    /**
+     * This route returns the latest information about position of requested mobile station.
+     *
+     * @param stationId identifier of mobile station.
+     * @return DTO instance containing station identifier, X/Y coordinates and error value.
+     */
+    @GetMapping("/mobile/find")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public StationMobilePositionDTO getMobileStationPosition(@StationMobileExists Integer stationId) {
+        StationMobilePositionDTO responseDto = new StationMobilePositionDTO();
+        mapper.map(stationService.getMobileStation(stationId), responseDto);
+
+        return responseDto;
+    }
+
+    /**
+     * This route creates a new StationBase entity and returns JSON with its id to a user.
+     *
+     * @return single-pair map with id.
+     */
+    @PostMapping("/base/new")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public HashMap<String, Integer> createBaseStation() {
+        return new HashMap<String, Integer>() {{
+            put("newBaseStationId", stationService.createBaseStation());
+        }};
+    }
+
+    /**
+     * A default error handler, catches any exception.
+     * Hides the traces and other internal information from end-user, giving easy-to-read JSON instead.
+     *
+     * @param request request causing a problem.
+     * @param e caught exception.
+     * @return map with error data (code, error, path, time) which needs to be turned into JSON response.
+     */
     @ExceptionHandler(value = {Exception.class, RuntimeException.class})
     public Map<String, String> handleDefaultErrors(HttpServletRequest request, Exception e) {
         HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -59,31 +111,5 @@ class StationController {
         logger.error(ERROR_LOG_PREFIX, e);
 
         return error;
-    }
-
-    @PostMapping("/update")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public String update(@Valid @RequestBody StationBaseRequestDTO requestDto) {
-        return "TODO";
-    }
-
-    @GetMapping("/mobile/find")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public StationMobilePositionDTO getMobileStationPosition(@StationMobileExists Integer stationId) {
-        StationMobilePositionDTO responseDto = new StationMobilePositionDTO();
-        mapper.map(stationService.getMobileStation(stationId), responseDto);
-
-        return responseDto;
-    }
-
-    @PostMapping("/base/new")
-    @ResponseStatus(HttpStatus.OK)
-    @ResponseBody
-    public HashMap<String, Integer> createBaseStation() {
-        return new HashMap<String, Integer>() {{
-            put("newBaseStationId", stationService.createBaseStation());
-        }};
     }
 }
