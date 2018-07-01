@@ -10,4 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
 public class MissingStationMobileException extends Exception {
+    private static final String ERROR_MESSAGE = "Could not find a mobile station with such an id.";
+
+    @Override
+    public String getMessage() {
+        return ERROR_MESSAGE;
+    }
 }
